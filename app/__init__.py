@@ -6,33 +6,53 @@ import logging
 import os
 from flask import Flask, render_template, request,Response
 from flask_cors import CORS
-from .api import api as api_blueprint
-from .errors import add_error_handlers
-from .config import ConfigProd as Config
+from app.api import api as api_blueprint
+from app.errors import add_error_handlers
+from app.config import Config
 from flask_bcrypt import Bcrypt
+
+
 from .extensions import (
-    db,
-    migrate,
     bcrypt,
+    cache,
+    csrf_protect,
+    db,
+    debug_toolbar,
+    login_manager,
+    migrate,
+    mail,
 )
+
 from .models import *
 
 logger = logging.getLogger()
 def create_app(Config):
     app = Flask(__name__)
     app.config.from_object(Config)
-    #app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+    app.config["CACHE_TYPE"] = 'simple'
     CORS(app, resources={r'/*': {'origins': '*'}})
-    app.register_blueprint(api_blueprint, url_prefix='/api/v1')
+    
     register_extensions(app)
+    from app.users.routes import users
+    from app.posts.routes import posts
+    from app.main.routes import main
+    app.register_blueprint(api_blueprint, url_prefix='/api/v1')
+    app.register_blueprint(users)
+    app.register_blueprint(posts)
+    app.register_blueprint(main)
     add_error_handlers(app)
     return app
 
 def register_extensions(app):
     """Register Flask extensions."""
     bcrypt.init_app(app)
+    cache.init_app(app)
     db.init_app(app)
-
+    mail.init_app(app)
+    login_manager.login_view = 'users.login'
+    login_manager.login_message_category = 'info'
+    login_manager.init_app(app)
     migrate.init_app(app, db,compare_type=True)
     return None
 
