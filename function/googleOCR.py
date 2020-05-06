@@ -78,6 +78,7 @@ def _get_ocr_tokens(url):
     '''
     return result
 
-if __name__ == '__main__':
-    result = _get_ocr_tokens("https://ccnew-275119.ue.r.appspot.com/get_file/8FD7F482-FA07-4212-B789-D613D4BB5302.jpeg")
-    print(result)
+
+# if __name__ == '__main__':
+#     result = _get_ocr_tokens("https://ccnew-275119.ue.r.appspot.com/get_file/8FD7F482-FA07-4212-B789-D613D4BB5302.jpeg")
+#     print(result)

@@ -26,6 +26,8 @@ from .extensions import (
 from .models import *
 
 logger = logging.getLogger()
+
+
 def create_app(Config):
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -44,6 +46,7 @@ def create_app(Config):
     add_error_handlers(app)
     return app
 
+
 def register_extensions(app):
     """Register Flask extensions."""
     bcrypt.init_app(app)
@@ -53,7 +56,7 @@ def register_extensions(app):
     login_manager.login_view = 'users.login'
     login_manager.login_message_category = 'info'
     login_manager.init_app(app)
-    migrate.init_app(app, db,compare_type=True)
+    migrate.init_app(app, db, compare_type=True)
     return None
 
 application = create_app(Config)

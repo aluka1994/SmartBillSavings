@@ -10,12 +10,16 @@ import os,tempfile
 from flask import current_app as app
 from app.posts.googleOCR import _get_ocr_tokens
 from google.cloud import storage
+from google.cloud import pubsub
+import json
 CLOUD_STORAGE_BUCKET = os.environ['CLOUD_STORAGE_BUCKET']
 #CLOUD_STORAGE_BUCKET = "ccnew-275119:us-east1:clouddb"
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 posts = Blueprint('posts', __name__)
+publisher = pubsub.PublisherClient()
+
 
 @login_required
 @posts.route('/uploads/<filename>')
@@ -34,10 +38,12 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @login_required
 @posts.route('/success/<name>')
 def success(name):
     return 'welcome %s' % name
+
 
 @posts.route('/get_file/<object>')
 def get_file(object):
@@ -50,6 +56,7 @@ def get_file(object):
         fullpath = os.path.join(tmpdirname, object)
         blob.download_to_filename(fullpath)
         return send_from_directory(tmpdirname, object) 
+
 
 @login_required
 @posts.route('/posts/images', methods=['GET', 'POST'])
@@ -80,13 +87,23 @@ def upload_file():
                 content_type=file.content_type
             )
             respond = get_file(filename)
-            filePath = 'https://ccnew-275119.ue.r.appspot.com/get_file/'+filename
+            filePath = 'https://'+CLOUD_STORAGE_BUCKET+'/get_file/'+filename
             data = ""
             data = gOCR(filePath)
             imageUser = userImage(imageName=filename, imageUrl=str(filePath), \
-                content=data,timage=current_user)
+                content=data, timage=current_user)
             db.session.add(imageUser)
             db.session.commit()
+
+            message = {
+                'fileUrl': filePath,
+                'userId': current_user.get_id()
+            }
+            topic_name = 'projects/{}/topics/{}'.format(
+                os.getenv('GOOGLE_CLOUD_PROJECT'), 'ocr'
+            )
+            publisher.publish(topic_name, json.dumps(message).encode('utf8'))
+
             return redirect(url_for('main.home'))
     return render_template('postImage.html')
 

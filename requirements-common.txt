@@ -13,7 +13,8 @@ gevent==1.4.0
 Pillow
 requests
 google-api-python-client
-google-cloud-storage==1.26.0
+google-cloud-storage==1.28.1
+google-cloud-pubsub==1.4.3
 gunicorn==20.0.4
 SQLAlchemy==1.3.16
 alembic==1.4.2

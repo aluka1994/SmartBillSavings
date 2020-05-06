@@ -1,0 +1,7 @@
+#requirements for Google Function
+#google-cloud-translate==2.0.0
+google-api-python-client
+google-cloud-storage==1.26.0
+Pillow
+requests
+sqlalchemy

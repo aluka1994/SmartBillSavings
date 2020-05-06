@@ -1,4 +1,4 @@
-from flask import current_app,Flask
+from flask import current_app, Flask
 from flask_migrate import Migrate, MigrateCommand
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -12,6 +12,7 @@ from flask_script import Manager
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,14 +43,15 @@ class User(db.Model, UserMixin):
 class userImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     imageName = db.Column(db.String(100), nullable=False)
-    imageUrl = db.Column(db.String(1000),nullable=False)
-    imageDate = db.Column(db.DateTime,default=datetime.utcnow)
-    notify = db.Column(db.Boolean,default=False)
+    imageUrl = db.Column(db.String(1000), nullable=False)
+    imageDate = db.Column(db.DateTime, default=datetime.utcnow)
+    notify = db.Column(db.Boolean, default=False)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
         return 'userImage %r %r %r>' % (self.imageName, self.imageUrl, self.notify)
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -57,7 +59,6 @@ class Post(db.Model):
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
