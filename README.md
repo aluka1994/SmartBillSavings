@@ -147,3 +147,7 @@ CI workflow noted above.
 
 This repo is the successor of https://github.com/kamalgill/flask-appengine-template , now archived
 due to legacy technology choices and the end-of-life of Python 2 on Jan 1 2020.
+
+## G cloud command
+`
+gcloud functions deploy Translate --runtime=python37 --entry-point=subscribe --trigger-topic=ocr --set-env-vars GOOGLE_CLOUD_PROJECT=ccnew-275119,CLOUD_STORAGE_BUCKET=ccnew-275119.appspot.com,CLOUD_SQL_CONNECTION_NAME=ccnew-275119:us-east1:clouddb,DB_USER=raja,DB_PASS=cloudcc,DB_NAME=bdb `
