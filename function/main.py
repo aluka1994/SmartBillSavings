@@ -23,9 +23,10 @@ import logging
 from flask import current_app as app
 from flask_sqlalchemy import SQLAlchemy
 from google.cloud import error_reporting
-from google.cloud import logging
+# from google.cloud import logging
+import google.cloud.logging
 
-logging_client = logging.Client(project="gae-cloud-asu")
+logging_client = google.cloud.logging.Client(project="gae-cloud-asu")
 logging_client.setup_logging()
 
 client = error_reporting.Client()
