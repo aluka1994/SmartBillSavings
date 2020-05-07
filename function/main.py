@@ -33,28 +33,28 @@ from flask_sqlalchemy import SQLAlchemy
 # logger = logging_client.logger(log_name)
 import google.cloud.logging as cloud_logging
 from google.cloud import logging
-publisher = pubsub.PublisherClient()
-PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT')
-
-cloud_client = cloud_logging.Client()
-log_name = 'cloudfunctions.googleapis.com%2Fcloud-functions'
-cloud_logger = cloud_client.logger(log_name)
-
-# client = error_reporting.Client()
-
-db_user = "master"
-db_password = "46LyfcwwxCK3dDJq"
-db_name = "billing"
-db_connection_name = "gae-cloud-asu:us-west4"
-
-# This is for Postgres, datait's similar for MySQL
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = f'mysql://{db_user}:{db_password}@/{db_name}?host=/cloudsql/{db_connection_name}'
-
-# This must be set, determine which is best for you
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
+# publisher = pubsub.PublisherClient()
+# PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT')
+#
+# cloud_client = cloud_logging.Client()
+# log_name = 'cloudfunctions.googleapis.com%2Fcloud-functions'
+# cloud_logger = cloud_client.logger(log_name)
+#
+# # client = error_reporting.Client()
+#
+# db_user = "master"
+# db_password = "46LyfcwwxCK3dDJq"
+# db_name = "billing"
+# db_connection_name = "gae-cloud-asu:us-west4"
+#
+# # This is for Postgres, datait's similar for MySQL
+# app.config[
+#     'SQLALCHEMY_DATABASE_URI'] = f'mysql://{db_user}:{db_password}@/{db_name}?host=/cloudsql/{db_connection_name}'
+#
+# # This must be set, determine which is best for you
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#
+# db = SQLAlchemy(app)
 
 CLOUD_STORAGE_BUCKET = "gae-cloud-asu.appspot.com"
 
@@ -70,17 +70,17 @@ CLOUD_STORAGE_BUCKET = "gae-cloud-asu.appspot.com"
 # )
 
 
-class userImage(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    imageName = db.Column(db.String(100), nullable=False)
-    imageUrl = db.Column(db.String(1000), nullable=False)
-    imageDate = db.Column(db.DateTime, default=datetime.utcnow)
-    notify = db.Column(db.Boolean, default=False)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return 'userImage %r %r %r>' % (self.imageName, self.imageUrl, self.notify)
+# class userImage(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     imageName = db.Column(db.String(100), nullable=False)
+#     imageUrl = db.Column(db.String(1000), nullable=False)
+#     imageDate = db.Column(db.DateTime, default=datetime.utcnow)
+#     notify = db.Column(db.Boolean, default=False)
+#     content = db.Column(db.Text, nullable=False)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+#
+#     def __repr__(self):
+#         return 'userImage %r %r %r>' % (self.imageName, self.imageUrl, self.notify)
 
 
 def get_actual_image(image_path):
@@ -163,42 +163,40 @@ def get_file(url):
 def parse_message(event, context):
     """ Process a pubsub message
     """
-    message = base64.b64decode(event['data'])
+    message_first = base64.b64decode(event['data'])
+    print(message_first)
+    message = json.loads(message_first)
     print(message)
-    p = json.loads(message)
-    print(p)
     # logging.warning("event: ", event)
     # logger.log_text("event: ", event)
     # envelope = json.loads(request.data.decode('utf-8'))
     # payload = base64.b64decode(envelope['message']['imPath'])
-    print(event)
-    message_data = base64.b64decode(event['data'])
-    print(message_data)
-    print("new")
-    print(message_data.decode('utf-8'))
-    # logging.warning("message_data: ", message_data)
-    # logger.log_text("message_data: ", message_data)
-    message = json.loads(message_data)
+    # print(event)
+    # message_data = base64.b64decode(event['data'])
+    # print(message_data)
+    # print("new")
+    # print(message_data.decode('utf-8'))
+    # message = json.loads(message_data)
     # logger.log_text("message: ", message)
 
     file_url = message['fileUrl']
     user_id = message['userId']
-    # logger.log_text("file_url: ", file_url)
-    # logger.log_text("user_id: ", file_url)
+    print("file_url: ", file_url)
+    print("user_id: ", user_id)
     #
     # logger.log_text("staring to get file")
     file_path = get_file(file_url)
-    # logger.log_text(file_path)
+    print(file_path)
     data = ""
-    data = get_ocr_tokens(file_path)
-    # logger.log_text("data processed")
-    # logger.log_text("data: ", data)
+    # data = get_ocr_tokens(file_path)
+    print("data processed")
+    print("data: ", data)
     base_file_name = basename(normpath(file_url))
-    # logger.log_text("base file name: ", base_file_name)
-    image_user = userImage(imageName=base_file_name, imageUrl=str(file_url), content=data, timage=user_id)
-    try:
-        db.session.add(image_user)
-        db.session.commit()
-    except RuntimeError:
-        print("error")
-        # client.report_exception()
+    print("base file name: ", base_file_name)
+    # image_user = userImage(imageName=base_file_name, imageUrl=str(file_url), content=data, timage=user_id)
+    # try:
+    #     db.session.add(image_user)
+    #     db.session.commit()
+    # except RuntimeError:
+    #     print("error")
+    #     # client.report_exception()

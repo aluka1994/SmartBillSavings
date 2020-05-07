@@ -8,3 +8,4 @@ sqlalchemy
 mysqlclient
 Flask-SQLAlchemy
 google-cloud-logging==1.15.0
+google-cloud-pubsub==1.4.3
