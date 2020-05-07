@@ -5,3 +5,7 @@ google-cloud-storage==1.26.0
 Pillow
 requests
 sqlalchemy
+mysqlclient
+Flask-SQLAlchemy
+google-cloud-error-reporting==0.33.0
+google-cloud-logging

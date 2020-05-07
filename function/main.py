@@ -18,20 +18,57 @@ import requests
 from io import BytesIO
 from PIL import Image
 import base64
+import logging
 
-CLOUD_STORAGE_BUCKET = os.environ['CLOUD_STORAGE_BUCKET']
-db = sqlalchemy.create_engine(
-    # Equivalent URL:
-    # mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=/cloudsql/<cloud_sql_instance_name>
-    sqlalchemy.engine.url.URL(
-        drivername="mysql+pymysql",
-        username="master",
-        password="46LyfcwwxCK3dDJq",
-        database="billing",
-        query={"unix_socket": "/cloudsql/{}".format('gae-cloud-asu:us-west4')},
-    ),
-)
+from flask import current_app as app
+from flask_sqlalchemy import SQLAlchemy
+from google.cloud import error_reporting
+from google.cloud import logging
 
+logging_client = logging.Client(project="gae-cloud-asu")
+logging_client.setup_logging()
+
+client = error_reporting.Client()
+
+db_user = "master"
+db_password = "46LyfcwwxCK3dDJq"
+db_name = "billing"
+db_connection_name = "gae-cloud-asu:us-west4"
+
+# This is for Postgres, datait's similar for MySQL
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = f'mysql://{db_user}:{db_password}@/{db_name}?host=/cloudsql/{db_connection_name}'
+
+# This must be set, determine which is best for you
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+CLOUD_STORAGE_BUCKET = "gae-cloud-asu.appspot.com"
+
+
+# db = sqlalchemy.create_engine(
+#     sqlalchemy.engine.url.URL(
+#         drivername="mysql",
+#         username="master",
+#         password="46LyfcwwxCK3dDJq",
+#         database="billing",
+#         query={"unix_socket": "/cloudsql/{}".format('gae-cloud-asu:us-west4')},
+#     ),
+# )
+
+
+class userImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    imageName = db.Column(db.String(100), nullable=False)
+    imageUrl = db.Column(db.String(1000), nullable=False)
+    imageDate = db.Column(db.DateTime, default=datetime.utcnow)
+    notify = db.Column(db.Boolean, default=False)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return 'userImage %r %r %r>' % (self.imageName, self.imageUrl, self.notify)
 
 
 def get_actual_image(image_path):
@@ -102,23 +139,10 @@ def get_ocr_tokens(url):
     return result
 
 
-class userImage(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    imageName = db.Column(db.String(100), nullable=False)
-    imageUrl = db.Column(db.String(1000), nullable=False)
-    imageDate = db.Column(db.DateTime, default=datetime.utcnow)
-    notify = db.Column(db.Boolean, default=False)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return 'userImage %r %r %r>' % (self.imageName, self.imageUrl, self.notify)
-
-
 def get_file(url):
     gcs = storage.Client()
     bucket = gcs.get_bucket(CLOUD_STORAGE_BUCKET)
-    blob = bucket.blob('bills/'+url)
+    blob = bucket.blob('bills/' + url)
     full_path = os.path.join('/tmp/', url)
     blob.download_to_filename(full_path)
     return full_path
@@ -127,16 +151,35 @@ def get_file(url):
 def parse_message(event, context):
     """ Process a pubsub message
     """
+    log_name = 'my-log'
+    logger = logging_client.logger(log_name)
+    logging.warning("event: ", event)
+    logger.log_text("event: ", event)
+    # envelope = json.loads(request.data.decode('utf-8'))
+    # payload = base64.b64decode(envelope['message']['imPath'])
     message_data = base64.b64decode(event['data']).decode('utf-8')
+    logging.warning("message_data: ", message_data)
+    logger.log_text("message_data: ", message_data)
     message = json.loads(message_data)
+    logger.log_text("message: ", message)
 
     file_url = message['fileUrl']
     user_id = message['userId']
+    logger.log_text("file_url: ", file_url)
+    logger.log_text("user_id: ", file_url)
 
+    logger.log_text("staring to get file")
     file_path = get_file(file_url)
+    logger.log_text(file_path)
     data = ""
     data = get_ocr_tokens(file_path)
+    logger.log_text("data processed")
+    logger.log_text("data: ", data)
     base_file_name = basename(normpath(file_url))
+    logger.log_text("base file name: ", base_file_name)
     image_user = userImage(imageName=base_file_name, imageUrl=str(file_url), content=data, timage=user_id)
-    db.session.add(image_user)
-    db.session.commit()
+    try:
+        db.session.add(image_user)
+        db.session.commit()
+    except RuntimeError:
+        client.report_exception()

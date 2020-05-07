@@ -87,13 +87,13 @@ def upload_file():
                 content_type=file.content_type
             )
             respond = get_file(filename)
-            filePath = 'https://'+CLOUD_STORAGE_BUCKET+'/get_file/'+filename
+            filePath = 'https://'+"gae-cloud-asu.wn.r.appspot.com"+'/get_file/'+filename
             data = ""
-            data = gOCR(filePath)
-            imageUser = userImage(imageName=filename, imageUrl=str(filePath), \
-                content=data, timage=current_user)
-            db.session.add(imageUser)
-            db.session.commit()
+            # data = gOCR(filePath)
+            # imageUser = userImage(imageName=filename, imageUrl=str(filePath), \
+            #     content=data, timage=current_user)
+            # db.session.add(imageUser)
+            # db.session.commit()
 
             message = {
                 'fileUrl': filePath,
