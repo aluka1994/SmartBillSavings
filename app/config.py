@@ -9,7 +9,11 @@ class Config: #production
     db_user = os.environ.get("DB_USER")
     db_pass = os.environ.get("DB_PASS")
     db_name = os.environ.get("DB_NAME")
-    cloud_storage_bucket = os.environ['CLOUD_STORAGE_BUCKET']
+    CLOUD_STORAGE_BUCKET = os.environ['CLOUD_STORAGE_BUCKET']
+    PUBSUB_VERIFICATION_TOKEN = os.environ['PUBSUB_VERIFICATION_TOKEN']
+    CLOUD_URL = os.environ['CLOUD_URL']
+    PUBSUB_TOPIC = os.environ['PUBSUB_TOPIC']
+    PROJECT = os.environ['GOOGLE_CLOUD_PROJECT']
     # mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=/cloudsql/<cloud_sql_instance_name>
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://'+db_user+':'+\
     db_pass+'@/'+db_name+'?unix_socket=/cloudsql/'+cloud_sql_connection_name+"?charset=utf8mb4"
@@ -19,11 +23,15 @@ class Config: #production
 class Config: #development
     SECRET_KEY = "somesecretkey"
     cloud_sql_connection_name = "ccnew-275119.appspot.com"
-    db_user = "root"
-    db_pass = "raja1234"
+    db_user = "raja"
+    db_pass = "cloudcc"
     db_name = "bdb"
-    cloud_storage_bucket = "ccnew-275119:us-east1:clouddb"
+    CLOUD_STORAGE_BUCKET = "ccnew-275119.appspot.com"
+    PUBSUB_VERIFICATION_TOKEN = "1234abc"
+    PUBSUB_TOPIC = "cloud-builds"
+    PROJECT = "ccnew-275119"
     # mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=/cloudsql/<cloud_sql_instance_name>
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://'+db_user+':'+\
-    db_pass+'@localhost/'+db_name+"?charset=utf8mb4"
+    db_pass+'@104.196.153.244:3306/'+db_name+"?charset=utf8mb4"
+
 '''

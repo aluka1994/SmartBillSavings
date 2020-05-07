@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+
+{% block contentform %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="content-section">
+            <h5>Create Grocery List</h5>
+            <p class='text-muted'>
+                <form class="new" id = "gid" method="post" action="{{url_for('main.savegrocery')}}">
+                    <div id="dynamicInput"></div> <br>
+                    <input type="button" value="Add" onclick="addInput('dynamicInput');" />
+                    <input  value="Save" type="submit" onclick="gclick(event)"  />
+                </form>
+            </p>
+            </div>
+             <h6>
+             {% if grocerylist %}
+             <ul class="list-group">
+                {% for value in grocerylist %}
+                    <li class="list-group-item list-group-item-light"><strong>{{value.productName}} </strong></li>   
+                    <input  value="delete" type="submit" onclick="deletefunc({{value.id}})"  />
+                {% endfor %}
+            {% else %}
+            {% endif %}
+            </ul> <br>
+        </div>
+    </div>
+{% endblock %}
+{% block content %}
+    <div class="row">
+    <div class="col-md-12">
+            <div class="content-section">
+            <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+            <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+            </div>
+            <table class="table table-bordered" id="pdd">
+                <thead>
+                    <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for value in products %}
+                        <tr>
+                        <td>{{value.id}}</td>
+                        <td>{{value.name}}</td>
+                        <td>{{value.price}}</td>
+                        <td>{{value.quantity}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+    </div>
+    </div>
+    
+    <script>
+        var prod = [];
+        var prices = [];
+        var prodfreq = [];
+        //var prodDate = [];
+
+        let track = new Map();
+        
+        function convert_to_float(a) { 
+          
+            // Type conversion 
+            // of string to float 
+            var floatValue = +(a); 
+            
+            // Return float value 
+            return floatValue;  
+        }  
+
+        let count = 0;
+        {% for value in products %}
+            var qt = convert_to_float("{{value.quantity}}");
+            var st = "{{value.name}}".split(" ").join("");
+            if(track.has(st)){
+               track.set(st,track.get(st)+qt);
+            }
+            else{
+                track.set(st,qt);
+                
+            }
+        {% endfor %}
+
+        
+        
+        console.log(track);
+        for (let [key, value] of track) {
+            prod.push(key);
+            prodfreq.push(value);
+            //console.log(key + ' = ' + value)
+        }
+        console.log(prod);
+
+        var trace1 = {
+            x: prod,
+            y: prodfreq,
+            type: 'bar',
+            text: prodfreq.map(String),
+            textposition: 'auto',
+            hoverinfo: 'none',
+            marker: {
+                color: 'rgb(158,202,225)',
+                opacity: 0.6,
+                line: {
+                color: 'rgb(8,48,107)',
+                width: 1.5
+                }
+            }
+        };
+        var layout = {
+            title: 'Quantity of products purchased',
+            font:{
+                size: 8,
+                family: 'Raleway, sans-serif'
+            },
+            showlegend: false,
+            xaxis: {
+                tickangle: -45,
+            },
+            yaxis: {
+                zeroline: false,
+                gridwidth: 2
+            },
+            bargap :0.05
+        };
+
+        var data = [trace1];
+        Plotly.newPlot('myDiv', data,layout);
+
+        function insertAfter(referenceNode, newNode) {
+            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        }
+
+        var choices = prod;
+        var tt = 0;
+        function addInput(divName) {
+            var newDiv = document.createElement('div');
+            newDiv.id = "gclist" + tt;
+            newDiv.className = 'row';
+            var selectHTML = "";
+            selectHTML="<select>";
+            for(i = 0; i < choices.length; i = i + 1) {
+                selectHTML += "<option value='" + choices[i] + "'" + ">" + choices[i] + "</option>";
+                //selectHTML += "<input type=\"button\" value=\"delete\" onclick=\"deleteInput('"+ i +"');""/>";
+            }
+            selectHTML += "</select>";
+            selectHTML += "<input type='button' value='delete' onclick='deleteInput(" + tt + ");' />";
+            newDiv.innerHTML = selectHTML;
+            document.getElementById(divName).appendChild(newDiv);
+            var el = document.createElement("br");
+            el.id = "gclistbr" + tt;
+            insertAfter(newDiv, el);
+            tt = tt+1;
+        }
+        function deleteInput(value){
+            //
+            var elem = document.getElementById("gclist"+ value);
+            elem.remove();
+            var elembr = document.getElementById("gclistbr"+ value);
+            elembr.remove();
+        }
+
+        function gclick(e){
+            //doing custom things with myVal
+
+            //here I want to prevent default
+            e = e || window.event;
+            e.preventDefault();
+            var gdata = [];
+            var gform = document.getElementById("gid");
+            var length = gform.length;
+            for(var i = 0; i < length; i++) {
+                
+                if(gform[i].value === "Save" || gform[i].value==="Add" || gform[i].value==="delete"){
+                    ;
+                }
+                else{
+                    gdata.push(gform[i].value);
+                }
+            }
+            console.log(gdata);
+            alert(gdata);
+            $.ajax({
+                url: "{{url_for('main.savegrocery')}}",
+                type: 'POST',
+                processData: false, // important
+                contentType: false, // important
+                dataType : 'json',
+                data: JSON.stringify({'gdata':gdata}),
+                success : function(data){
+                        console.log(data);
+                        alert([data['flag']]);
+                        if(data['flag'] === "success"){
+                            location.reload();
+                        }
+                        else if(data['flag'] === "fail"){
+                            alert(" There is an error in adding the list");
+                            location.reload();
+                        }
+                },
+            });
+        }
+
+        function deletefunc(id){
+            alert(id);
+            console.log(id);
+            $.ajax({
+                url: "{{url_for('main.deletegrocery')}}",
+                type: 'POST',
+                processData: false, // important
+                contentType: false, // important
+                dataType : 'json',
+                data: JSON.stringify({'gid':id}),
+                success : function(data){
+                        console.log(data);
+                        alert([data['flag']]);
+                        if(data['flag'] === "success"){
+                            location.reload();
+                        }
+                        else if(data['flag'] === "fail"){
+                            alert(" There is an error in deleting the item");
+                            location.reload();
+                        }
+                },
+            });
+        }
+</script>
+{% endblock content %}
+

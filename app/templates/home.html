@@ -1,4 +1,17 @@
 {% extends "layout.html" %}
+{% block contentform %}
+    <div class="row">
+        <div class="col-md-12">
+            <h6>Grocery List</h6>
+            <ul class="list-group">
+              {% for value in glist %}
+                <li class="list-group-item list-group-item-light">{{value.productName}}</li>
+              {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
 {% block content %}
     {% for uimage in uimages.items %}
         <article class="media content-section">
