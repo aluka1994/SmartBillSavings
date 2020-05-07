@@ -1,8 +1,8 @@
 from flask import (render_template, url_for, flash,
-                   redirect, request, abort, Blueprint)
+                   redirect, request, abort, Blueprint,current_app)
 from flask_login import current_user, login_required
 from app.extensions import db
-from app.models import Post,userImage
+from app.models import Post,userImage,User,Product
 from app.posts.forms import PostForm
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
@@ -10,22 +10,32 @@ import os,tempfile
 from flask import current_app as app
 from app.posts.googleOCR import _get_ocr_tokens
 from google.cloud import storage
-CLOUD_STORAGE_BUCKET = os.environ['CLOUD_STORAGE_BUCKET']
+from app.posts.processOCR import getData
+from google.cloud import pubsub_v1
+from flask import current_app
+import base64
+import json
+import logging
+import os
+
+# Initialize the publisher client once to avoid memory leak
+# and reduce publish latency.
+
+publisher = pubsub_v1.PublisherClient()
 #CLOUD_STORAGE_BUCKET = "ccnew-275119:us-east1:clouddb"
-
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-
 posts = Blueprint('posts', __name__)
 
-@login_required
+
 @posts.route('/uploads/<filename>')
+@login_required
 def uploaded_file(filename):
     return send_from_directory(app.root_path+'/static/uploads',
                                filename)
 
 
-@login_required
 @posts.route('/ocr/<filename>')
+@login_required
 def gOCR(filename):
     return _get_ocr_tokens(filename)
 
@@ -34,14 +44,16 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@login_required
+
 @posts.route('/success/<name>')
+@login_required
 def success(name):
     return 'welcome %s' % name
 
 @posts.route('/get_file/<object>')
 def get_file(object):
 
+    CLOUD_STORAGE_BUCKET = current_app.config['CLOUD_STORAGE_BUCKET']
     gcs = storage.Client()
     bucket = gcs.get_bucket(CLOUD_STORAGE_BUCKET)
     blob = bucket.blob('bills/'+object)
@@ -51,8 +63,8 @@ def get_file(object):
         blob.download_to_filename(fullpath)
         return send_from_directory(tmpdirname, object) 
 
-@login_required
 @posts.route('/posts/images', methods=['GET', 'POST'])
+@login_required
 def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -71,6 +83,7 @@ def upload_file():
             gcs = storage.Client()
 
             # Get the bucket that the file will be uploaded to.
+            CLOUD_STORAGE_BUCKET = current_app.config['CLOUD_STORAGE_BUCKET']
             bucket = gcs.get_bucket(CLOUD_STORAGE_BUCKET)
 
             # Create a new blob and upload the file's content.
@@ -80,16 +93,35 @@ def upload_file():
                 content_type=file.content_type
             )
             respond = get_file(filename)
-            filePath = 'https://ccnew-275119.ue.r.appspot.com/get_file/'+filename
+            CLOUD_URL = current_app.config['CLOUD_URL']
+            filePath =  CLOUD_URL+"/get_file/"+filename
             data = ""
-            data = gOCR(filePath)
+            #data = gOCR(filePath)
             imageUser = userImage(imageName=filename, imageUrl=str(filePath), \
                 content=data,timage=current_user)
             db.session.add(imageUser)
+            db.session.flush()
+            tdata = {"imPath":filePath,"uid":current_user.id,"filename":filename,"tid":imageUser.id}
             db.session.commit()
+            gt = (str(json.dumps(tdata))).encode('utf-8')
+            topic_path = publisher.topic_path(current_app.config['PROJECT'],current_app.config['PUBSUB_TOPIC'])
+            future = publisher.publish(topic_path, data=gt)
             return redirect(url_for('main.home'))
     return render_template('postImage.html')
 
+
+@posts.route("/processdata/")
+@login_required
+def backendData():
+    if (request.args.get('token', '') !=
+            current_app.config['PUBSUB_VERIFICATION_TOKEN']):
+        return 'Invalid request', 400
+
+    envelope = json.loads(request.data.decode('utf-8'))
+    payload = base64.b64decode(envelope['message']['imPath'])
+    #return str(MESSAGES)
+    # Returning any 2xx status indicates successful receipt of the message.
+    return getData()
 
 @posts.route("/post/new", methods=['GET', 'POST'])
 @login_required

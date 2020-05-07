@@ -21,6 +21,8 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
     userimages = db.relationship('userImage', backref='timage', lazy=True)
+    productname = db.relationship('Product', backref='productname', lazy=True)
+    grocerylistname = db.relationship('GroceryList', backref='grocerylist', lazy=True)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -48,6 +50,9 @@ class userImage(db.Model):
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+    def serialize(self):
+       return {c.name: str(getattr(self, c.name)).rstrip("\n") for c in self.__table__.columns}
+
     def __repr__(self):
         return 'userImage %r %r %r>' % (self.imageName, self.imageUrl, self.notify)
 
@@ -62,5 +67,29 @@ class Post(db.Model):
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
 
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(300), nullable=False)
+    price =  db.Column(db.Float, nullable=False)
+    purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    quantity = db.Column(db.Float,nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def serialize(self):
+       return {c.name: str(getattr(self, c.name)) for c in self.__table__.columns}
+
+    def __repr__(self):
+        return f"Product('{self.name}', '{self.price}','{self.purchase_date}','{self.quantity}')"
+
+
+class GroceryList(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    productName = db.Column(db.String(300), nullable=False)
+    quantity = db.Column(db.Float,nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f"GroceryList('{self.id}', '{self.productName}','{self.user_id}','{self.quantity}')"
 # if __name__ == '__main__':
 #     manager.run()

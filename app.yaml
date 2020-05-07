@@ -23,11 +23,15 @@ handlers:
   script: auto
 
 env_variables:
+    GOOGLE_CLOUD_PROJECT: ccnew-275119
     CLOUD_STORAGE_BUCKET: ccnew-275119.appspot.com
     CLOUD_SQL_CONNECTION_NAME: ccnew-275119:us-east1:clouddb
+    CLOUD_URL: https://ccnew-275119.ue.r.appspot.com
     DB_USER: raja
     DB_PASS: cloudcc
     DB_NAME: bdb
+    PUBSUB_TOPIC: ocr
+    PUBSUB_VERIFICATION_TOKEN: 1234abc
     
 # Set entrypoint to locate Flask app, which is 'application' in module app/__init__.py
 # Configure gunicorn worker count via --workers arg based on the App Engine instance class
