@@ -79,6 +79,10 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+
+            last_item = userImage.query.order_by(userImage.id.desc()).first()
+            tempfile = filename.split('.')
+            filename = str(tempfile[0]) + str(last_item.id) + "."+str(tempfile[1])
             # file.save(os.path.join(app.root_path,'static/uploads', filename))
             gcs = storage.Client()
 
@@ -96,7 +100,7 @@ def upload_file():
             CLOUD_URL = current_app.config['CLOUD_URL']
             filePath =  CLOUD_URL+"/get_file/"+filename
             data = ""
-            data = gOCR(filePath)
+            #data = gOCR(filePath)
             imageUser = userImage(imageName=filename, imageUrl=str(filePath), \
                 content=data,timage=current_user)
             db.session.add(imageUser)

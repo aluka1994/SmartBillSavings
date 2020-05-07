@@ -19,7 +19,7 @@ import json
 import os
 from flask import current_app as app
 from flask_sqlalchemy import SQLAlchemy
-# from app.googleOCR import _get_ocr_tokens
+from app.googleOCR import _get_ocr_tokens
 from datetime import datetime
 from flask_login import UserMixin
 from flask_script import Manager
@@ -179,7 +179,7 @@ def getData(duser,tid):
             purch = val[date+1]
             val = val[start:end]
             val = parseList(val,purch,user)
-    data.append(val)
+            data.append(val)
     return str(data)
 def subscribe(event, context):
     # Print out the data from Pub/Sub, to prove that it worked
@@ -195,9 +195,9 @@ def subscribe(event, context):
     print(filename)
     print(tid)
     user = User.query.filter_by(id=uid).first_or_404()
-    # content = _get_ocr_tokens(imPath)
-    # updateImage = userImage.query.filter_by(id=tid).first_or_404()
-    # updateImage.content = content
-    # db.session.commit()
+    content = _get_ocr_tokens(imPath)
+    updateImage = userImage.query.filter_by(id=tid).first_or_404()
+    updateImage.content = content
+    db.session.commit()
     getData(user,int(tid))
 # [END functions_pubsub_subscribe]
