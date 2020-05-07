@@ -18,6 +18,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 import base64
+from google.cloud import pubsub
 import logging
 
 from flask import current_app as app
@@ -32,7 +33,8 @@ from flask_sqlalchemy import SQLAlchemy
 # logger = logging_client.logger(log_name)
 import google.cloud.logging as cloud_logging
 from google.cloud import logging
-
+publisher = pubsub.PublisherClient()
+PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT')
 
 cloud_client = cloud_logging.Client()
 log_name = 'cloudfunctions.googleapis.com%2Fcloud-functions'
@@ -161,6 +163,10 @@ def get_file(url):
 def parse_message(event, context):
     """ Process a pubsub message
     """
+    message = base64.b64decode(event['data'])
+    print(message)
+    p = json.loads(message)
+    print(p)
     # logging.warning("event: ", event)
     # logger.log_text("event: ", event)
     # envelope = json.loads(request.data.decode('utf-8'))

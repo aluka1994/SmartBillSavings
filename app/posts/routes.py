@@ -25,7 +25,7 @@ publisher = pubsub_v1.PublisherClient()
 #CLOUD_STORAGE_BUCKET = "ccnew-275119:us-east1:clouddb"
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 posts = Blueprint('posts', __name__)
-publisher = pubsub.PublisherClient()
+# publisher = pubsub.PublisherClient()
 
 
 
@@ -104,7 +104,7 @@ def upload_file():
                 content=data,timage=current_user)
             db.session.add(imageUser)
             db.session.flush()
-            tdata = {"imPath":filePath,"uid":current_user.id,"filename":filename,"tid":imageUser.id}
+            tdata = {"imPath":filePath, "uid": current_user.id, "filename": filename, "tid": imageUser.id}
             db.session.commit()
             gt = (str(json.dumps(tdata))).encode('utf-8')
             topic_path = publisher.topic_path(current_app.config['PROJECT'],current_app.config['PUBSUB_TOPIC'])
