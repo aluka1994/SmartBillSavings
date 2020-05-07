@@ -96,7 +96,7 @@ def upload_file():
             CLOUD_URL = current_app.config['CLOUD_URL']
             filePath =  CLOUD_URL+"/get_file/"+filename
             data = ""
-            #data = gOCR(filePath)
+            data = gOCR(filePath)
             imageUser = userImage(imageName=filename, imageUrl=str(filePath), \
                 content=data,timage=current_user)
             db.session.add(imageUser)
@@ -113,12 +113,6 @@ def upload_file():
 @posts.route("/processdata/")
 @login_required
 def backendData():
-    if (request.args.get('token', '') !=
-            current_app.config['PUBSUB_VERIFICATION_TOKEN']):
-        return 'Invalid request', 400
-
-    envelope = json.loads(request.data.decode('utf-8'))
-    payload = base64.b64decode(envelope['message']['imPath'])
     #return str(MESSAGES)
     # Returning any 2xx status indicates successful receipt of the message.
     return getData()
