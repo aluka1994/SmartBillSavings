@@ -1,8 +1,8 @@
 # Cloud Computing Project 2 <br>
 ## Team Group 1 <br>
-1.Rajashekar Reddy Aluka 1217211645 <br>
-2.Pavan Kumar Bhalkey 1217204157 <br>
-3.Pushparajsinh Zala 1217568222 <br>
+- Rajashekar Reddy Aluka 1217211645 <br>
+- Pavan Kumar Bhalkey 1217204157 <br>
+- Pushparajsinh Zala 1217568222 <br>
 
 ## Development Setup Requirements
 
