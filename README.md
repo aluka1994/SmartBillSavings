@@ -1,41 +1,8 @@
-Team Group 1: <br>
-Rajashekar Reddy Aluka 1217211645 <br>
-Pavan Kumar Bhalkey 1217204157 <br>
-Pushparajsinh Zala 1217568222 <br>
-
-# Starter Kit for Flask on Google App Engine
-
-Starter project template for running a Flask-based application as a Web API on
-Google App Engine Standard (Python 3.7 Runtime).
-
-The application structure of this starter kit is loosely inspired by the API chapter of Miguel Grinberg's 
-[Flask Web Development (Second Edition)](http://oreilly.com/catalog/0636920089056) book,
-with the companion repo at https://github.com/miguelgrinberg/flasky
-
-
-## Scope of this starter kit
-
-The scope of this starter kit is fairly small, punting on the front-end UI implementation
-to avoid bloating the code and keeping the list of opinionated choices fairly minimal.
-
-### In scope and already implemented
-
-This starter kit includes the following:
-
-- Minimal Flask API blueprint, with a sample "hello world" handler at `app/api/hello.py`
-- Production-ready App Engine configuration (in `app.yaml`) with Flask WSGI app running via gunicorn and gevent
-- Continuous Integration (CI) workflow via GitHub Actions (see `.github/workflows/continous-integration.yaml`)
-- Unit tests via pytest (see `tests/test_api.py`)
-
-### Not yet implemented
-
-The starter kit does not yet include the following (PRs are welcome):
-
-- Continous deployment (CD) workflow via GitHub Actions, leveraging https://github.com/GoogleCloudPlatform/github-actions
-- Acceptance/smoke tests hitting API endpoints on App Engine post-deployment
-- Sample integration with Cloud Firestore
-- Sample auth integration
-
+# Cloud Computing Project 2 <br>
+## Team Group 1 <br>
+1.Rajashekar Reddy Aluka 1217211645 <br>
+2.Pavan Kumar Bhalkey 1217204157 <br>
+3.Pushparajsinh Zala 1217568222 <br>
 
 ## Development Setup Requirements
 
@@ -128,29 +95,8 @@ gcloud app deploy
 ```
 
 
-## CI/CD
+## Google Cloud Function Deployment
 
-A GitHub Actions continuous integration (CI) workflow is provided in the `.github/workflows` folder, running
-unit tests when a non-master branch is pushed to GitHub.
-
-Perform the following steps to configure the CI workflow to be enforced on GitHub pull requests (PRs) against
-the repo's master branch:
-
-1. In the GitHub UI for your forked repo, click the `Settings` tab at top and click the `Branches` nav item at left.
-2. In the `Branch protection rules` section, click the `Add rule` button if there is no rule for the master branch.
-3. If there is a protection rule for the master branch, click the `Edit` button for that rule.
-4. Enable the checkbox for the `Require status checks to pass before merging`.
-5. If `Run unit tests` is a visible option for the `Status checks found in the last week for this repository`, enable that option.
-6. If the `Run unit tests` option isn't displayed yet, it will display after a non-master branch has been pushed.
-7. Create a branch with a test commit to confirm the above has enabled status checks for PRs in your repo.
-
-A Continuous Deployment (CD) pipeline via GitHub Actions will likely land in this starter kit to complement the
-CI workflow noted above.
-
-
-## Prior Art
-
-This repo is the successor of https://github.com/kamalgill/flask-appengine-template , now archived
-due to legacy technology choices and the end-of-life of Python 2 on Jan 1 2020.
-
+```bash
 gcloud functions deploy Translate --runtime=python37 --entry-point=subscribe --trigger-topic=ocr --set-env-vars GOOGLE_CLOUD_PROJECT=ccnew-275119,CLOUD_STORAGE_BUCKET=ccnew-275119.appspot.com,CLOUD_SQL_CONNECTION_NAME=ccnew-275119:us-east1:clouddb,DB_USER=raja,DB_PASS=cloudcc,DB_NAME=bdb
+```
