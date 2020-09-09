@@ -47,7 +47,7 @@ def _get_image_bytes(image_path):
 
 
 def _get_ocr_tokens(url):
-    APIKEY = "AIzaSyAMm_XI16PEkoikzR5LeXffHbQz132FZwg"
+    APIKEY = ""
     vision_service = build("vision", "v1", developerKey=APIKEY)
     request = vision_service.images().annotate(body={
         'requests': [{
