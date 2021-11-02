@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block contentform %}
+    <div class="row">
+        <div class="col-md-12">
+            <h6>Grocery List</h6>
+            <ul class="list-group">
+              {% for value in glist %}
+                <li class="list-group-item list-group-item-light">{{value.productName}}</li>
+              {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% for uimage in uimages.items %}
+        <article class="media content-section">
+          <img class="rounded-circle article-img" src="{{uimage.imageUrl}}">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="{{ url_for('users.user_images', username=uimage.timage.username) }}">{{ uimage.timage.username }}</a>
+              <small class="text-muted">{{ uimage.imageDate.strftime('%Y-%m-%d') }}</small>
+            </div>
+            <h2><a class="article-title" href="{{uimage.imageUrl}}">{{ uimage.imageName }}</a></h2>
+            <p class="article-content">{{ uimage.content }}</p>
+          </div>
+        </article>
+    {% endfor %}
+    {% for page_num in uimages.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if page_num %}
+        {% if uimages.page == page_num %}
+          <a class="btn btn-info mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+        {% else %}
+          <a class="btn btn-outline-info mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+        {% endif %}
+      {% else %}
+        ...
+      {% endif %}
+    {% endfor %}
+{% endblock content %}

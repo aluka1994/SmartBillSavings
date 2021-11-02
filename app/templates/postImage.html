@@ -1,0 +1,21 @@
+
+{% extends "layout.html" %}
+ <title>Upload Bill</title>
+{% block content %}
+    <div class="row">
+    <div class="col-md-12">
+          <div class="content-section">
+              <strong><h5>Upload a Bill</h5></strong>
+              <form method=post enctype=multipart/form-data>
+                <input type=file name=file accept="image/jpeg,image/png,image/jpg">
+                <p><small>Supported formats JPG, JPEG, PNG.</small></p>
+                <br>
+                <input type=submit value=Upload>
+              </form>
+          </div>
+        <strong> Note: </strong> <p> If you are uploading any other formats mentioned other than above, the OCR might not work.
+        Sorry for the inconvience!! </p>
+    </div>
+    </div>
+
+{% endblock content %}
